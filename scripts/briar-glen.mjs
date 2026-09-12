@@ -181,7 +181,7 @@ async function makeGMDashboard(folder) {
 async function makeMacro(name, command, img="icons/svg/dice-target.svg") {
   let m=game.macros.find(x=>x.name===name && marked(x));
   if (m) return m;
-  return Macro.create({name,type:"script",command,img,flags:{[MODULE_ID]:{[FLAG]:true}});
+  return Macro.create({name,type:"script",command,img,flags:{[MODULE_ID]:{[FLAG]:true}}});
 }
 
 async function makeGMTools() {
