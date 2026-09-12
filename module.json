@@ -3,7 +3,7 @@
   "type": "module",
   "title": "The Stolen Bell of Briar Glen",
   "description": "A beginner-friendly D&D 5e adventure for five 1st-level characters. Includes tactical and theater-of-the-mind scenes, shared fog, darkness, walls, lighting, NPCs, monsters, journals, items, and encounter staging. Player characters are intentionally not included.",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "authors": [
     {
       "name": "Briar Glen Table"
@@ -36,6 +36,6 @@
   "readme": "https://github.com/JThaddeusToad/BriarGlen/blob/main/README.md",
   "url": "https://github.com/JThaddeusToad/BriarGlen",
   "manifest": "https://github.com/JThaddeusToad/BriarGlen/releases/latest/download/module.json",
-  "download": "https://github.com/JThaddeusToad/BriarGlen/releases/download/v0.7.6/stolen-bell-briar-glen-v0.7.6.zip",
+  "download": "https://github.com/JThaddeusToad/BriarGlen/releases/download/v0.7.7/stolen-bell-briar-glen-v0.7.7.zip",
   "bugs": "https://github.com/JThaddeusToad/BriarGlen/issues"
 }
