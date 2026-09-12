@@ -184,7 +184,7 @@ function polyWalls(points, geometry="v0.7.6") {
 }
 
 function villageWalls() {
-  const G="v0.7.7-village";
+  const G="v0.7.8-village";
   const out=[];
 
   // Reeve's House.
@@ -202,11 +202,7 @@ function villageWalls() {
   out.push(...polyWalls([[3460,920],[3190,1040],[3010,960]],G));
   out.push(...polyWalls([[2900,830],[2860,590],[2890,390]],G));
 
-  // NOTE: no wall polygon is created around "General Goods".
-  // That label refers to an open festival market/tent area and v0.7.6
-  // incorrectly treated it like a solid building, blocking the road.
-
-  // Shrine of Saint Arlen. Keep the west/south-west approach generous.
+  // Shrine of Saint Arlen.
   out.push(...polyWalls([[2900,1480],[3220,1450],[3460,1660],[3450,2130]],G));
   out.push(...polyWalls([[3450,2130],[3260,2310],[3070,2300]],G));
   out.push(...polyWalls([[2940,2260],[2830,2110],[2840,1680],[2900,1480]],G));
@@ -216,10 +212,8 @@ function villageWalls() {
   out.push(...polyWalls([[3990,2280],[3990,2700],[3780,2790]],G));
   out.push(...polyWalls([[3610,2720],[3440,2500],[3450,2150]],G));
 
-  // River banks, leaving bridge approaches open.
-  out.push(...polyWalls([[0,80],[150,430],[210,760],[170,1050],[300,1350],[520,1550],[660,1750]],G));
-  out.push(...polyWalls([[940,1830],[1110,1990],[1250,2220],[1390,2450],[1640,2690],[1840,3000]],G));
-
+  // Deliberately no river-bank or label-adjacent walls.
+  // Town Gate and market-to-shrine roads remain fully traversable.
   return out;
 }
 
@@ -243,52 +237,86 @@ function forestWalls() {
   return out;
 }
 
+function caveMoveWall(x1,y1,x2,y2,geometry="v0.7.8-cave") {
+  return {
+    c:[x1,y1,x2,y2],
+    move:20,
+    sight:0,
+    light:0,
+    sound:0,
+    door:0,
+    ds:0,
+    flags:{[MODULE_ID]:{[FLAG]:true,geometry}}
+  };
+}
+
+function caveMovePoly(points, geometry="v0.7.8-cave") {
+  const out=[];
+  for(let i=0;i<points.length-1;i++) out.push(caveMoveWall(...points[i],...points[i+1],geometry));
+  return out;
+}
+
 function caveWalls() {
   const out=[];
-  const G="v0.7.7-cave";
+  const G="v0.7.8-cave";
 
-  // Entrance ledge: follow the dark rock above and below the entry shelf.
-  out.push(...polyWalls([[0,560],[400,480],[700,390],[980,420],[1180,540]],G));
-  out.push(...polyWalls([[0,1050],[350,1120],[650,1040],[900,930],[1100,860]],G));
+  // Central chasm / blue-water drop: primary hard movement boundary.
+  out.push(...caveMovePoly([
+    [1740,1010],[1880,920],[2020,980],[2110,1130],[2100,1320],
+    [2020,1500],[2020,1710],[2100,1920],[2160,2130],[2160,2360],
+    [2070,2570],[1910,2720]
+  ],G));
 
-  // Upper chamber perimeter.
-  out.push(...polyWalls([[1180,540],[1330,300],[1600,150],[2050,80],[2450,140],[2660,320],[2750,520]],G));
-  out.push(...polyWalls([[1100,860],[1300,900],[1500,1000],[1750,1080]],G));
+  out.push(...caveMovePoly([
+    [2240,900],[2390,950],[2500,1110],[2520,1320],[2460,1510],
+    [2390,1710],[2440,1910],[2540,2100],[2610,2310],[2580,2490]
+  ],G));
 
-  // Vertical bridge from entrance into the upper chamber: walls only along its sides.
-  out.push(...polyWalls([[1120,620],[1220,760],[1240,980]],G));
-  out.push(...polyWalls([[1420,600],[1490,780],[1510,970]],G));
+  // Lower-left exterior cliff. Keeps tokens from stepping into the large black void
+  // without fencing off the Cave Entrance label/room.
+  out.push(...caveMovePoly([
+    [470,1700],[300,1950],[180,2250],[160,2520],[260,2780],[500,2940],[820,3000]
+  ],G));
 
-  // Lower-left chamber perimeter.
-  out.push(...polyWalls([[900,930],[770,1200],[650,1450],[450,1650],[280,1950],[180,2300],[250,2600],[500,2800],[800,2860]],G));
-  out.push(...polyWalls([[1510,970],[1550,1180],[1490,1420],[1370,1600],[1240,1770],[1150,2020],[1200,2250],[1400,2450],[1650,2600]],G));
+  // Inner lower-left rock edge.
+  out.push(...caveMovePoly([
+    [1230,1740],[1140,1990],[1180,2250],[1390,2470],[1650,2620]
+  ],G));
 
-  // Central water/chasm. These two boundaries keep tokens out of the obvious blue/black drop.
-  out.push(...polyWalls([[1750,1080],[1840,980],[1980,1000],[2070,1130],[2060,1320],[1980,1480],[1980,1700],[2050,1900],[2120,2100],[2140,2350],[2060,2550],[1900,2700]],G));
-  out.push(...polyWalls([[2250,900],[2380,950],[2480,1100],[2500,1300],[2450,1500],[2380,1700],[2420,1900],[2520,2080],[2580,2300],[2550,2480]],G));
+  // Central-bottom rock island.
+  out.push(...caveMovePoly([
+    [1450,2140],[1630,2060],[1810,2110],[1910,2260],[1900,2430],
+    [1800,2580],[1620,2670],[1450,2610]
+  ],G));
 
-  // Grikka's Lair ceiling/floor edges.
-  out.push(...polyWalls([[2750,520],[2880,300],[3150,160],[3500,120],[3850,180],[4000,260]],G));
-  out.push(...polyWalls([[2770,720],[2960,820],[3200,830],[3450,760],[3700,700],[4000,780]],G));
+  // Eastern Old Tunnels exterior edge. Intentionally leaves the label and room floor open.
+  out.push(...caveMovePoly([
+    [3590,1080],[3520,1300],[3570,1500],[3710,1660]
+  ],G));
 
-  // Bridge to Grikka's Lair.
-  out.push(...polyWalls([[2600,430],[2700,500],[2800,620]],G));
-  out.push(...polyWalls([[2840,600],[2920,520],[3040,460]],G));
+  // Shrine/spider nest outer rock boundary.
+  out.push(...caveMovePoly([
+    [2770,1940],[2700,2160],[2630,2410],[2660,2690],[2790,3000]
+  ],G));
+  out.push(...caveMovePoly([
+    [3820,1840],[3760,2050],[3790,2220],[3900,2370],[3980,2570]
+  ],G));
 
-  // Old Tunnels chamber.
-  out.push(...polyWalls([[4000,780],[3800,850],[3650,1050],[3600,1280],[3650,1500],[3820,1650],[4000,1700]],G));
-  out.push(...polyWalls([[3100,800],[3000,1000],[2960,1220],[3000,1450],[3120,1600]],G));
+  // Grikka's Lair outer ceiling/right cliff only; no walls through the label or bridge.
+  out.push(...caveMovePoly([
+    [2870,300],[3160,170],[3500,130],[3850,190],[4000,270]
+  ],G));
+  out.push(...caveMovePoly([
+    [3720,720],[3900,760],[4000,820]
+  ],G));
 
-  // Bridge from the center toward the eastern side: keep the center open.
-  out.push(...polyWalls([[2500,1450],[2620,1530],[2750,1650],[2860,1800]],G));
-  out.push(...polyWalls([[2600,1280],[2750,1380],[2890,1500],[3000,1620]],G));
-
-  // Shrine/spider-nest outer rock.
-  out.push(...polyWalls([[2860,1800],[2800,2000],[2720,2200],[2650,2450],[2670,2700],[2800,3000]],G));
-  out.push(...polyWalls([[4000,1700],[3860,1800],[3780,1980],[3780,2200],[3900,2350],[3980,2550],[4000,2800]],G));
-
-  // Large central-bottom rock mass.
-  out.push(...polyWalls([[1200,2250],[1400,2150],[1600,2150],[1780,2250],[1850,2420],[1800,2580],[1650,2700],[1450,2680]],G));
+  // Entrance-area rock margins, with a very large clear corridor around "Cave Entrance".
+  out.push(...caveMovePoly([
+    [0,520],[360,450],[690,360],[960,390]
+  ],G));
+  out.push(...caveMovePoly([
+    [0,1120],[330,1160],[620,1080],[850,980]
+  ],G));
 
   return out;
 }
@@ -672,7 +700,7 @@ async function repairSceneAuthoringV076(actorFolder, journalFolder, village, for
   await replaceModuleWalls(forest,forestWalls());
   await replaceModuleWalls(cave,caveWalls());
 
-  ui.notifications.info("Briar Glen v0.7.7: village pathing and cave wall geometry repaired.");
+  ui.notifications.info("Briar Glen v0.7.8: label-adjacent barriers removed and cave walls changed to movement-only.");
 }
 
 async function installAdventure() {
