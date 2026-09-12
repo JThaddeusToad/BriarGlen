@@ -379,7 +379,8 @@ async function makeGMTools() {
   await makeMacro("BG - Hide Selected Tokens",
     `const toks=canvas.tokens.controlled; if(!toks.length)return ui.notifications.warn("Select token(s) first."); await canvas.scene.updateEmbeddedDocuments("Token",toks.map(t=>({_id:t.id,hidden:true})));`);
   await makeMacro("BG - Ring the Bell",
-    `const target=[...game.user.targets][0]; if(!target)return ui.notifications.warn("Target Scratch-Scratch first."); ChatMessage.create({content:"<h2>🔔 The Bell of Saint Arlen Rings!</h2><p>Scratch-Scratch must make a <b>DC 12 Wisdom saving throw</b>. On a failure it is <b>Frightened of the bell-ringer until the end of its next turn</b>. After its first successful Bell save, it has advantage on later Bell saves.</p>"});`);
+    `const target=[...game.user.targets][0]; if(!target)return ui.notifications.warn("Target Scratch-Scratch first."); ChatMessage.create({content:"<h2>🔔 The Bell of Saint Arlen Rings!</h2><p>Scratch-Scratch must make a <b>DC 12 Wisdom saving throw</b>. On a failure it is <b>Frightened of the bell-ringer until the end of its next turn</b>. After its first successful Bell save, it has advantage on later Bell saves.</p>"});`,
+    "icons/sundries/misc/bell.webp");
   await makeMacro("BG - Easy Boss",
     `const a=game.actors.getName("Scratch-Scratch"); if(!a)return ui.notifications.warn("Scratch-Scratch not found."); await a.update({"system.attributes.hp.value":22,"system.attributes.hp.max":22}); ui.notifications.info("Scratch-Scratch set to 22 HP.");`);
   await makeMacro("BG - Standard Boss",
@@ -474,7 +475,8 @@ async function makeExplorationMacros() {
   await makeMacro("BG - Open Shrine Chest",
     `ChatMessage.create({content:"<h2>🗝 The Old Shrine Chest</h2><p>The brass key turns with a dry click.</p><p><b>Treasure:</b> 35 gp, 2 Potions of Healing, a silvered dagger, and an old map marked with a crowned raven.</p>"});`);
   await makeMacro("BG - Goblin Surrenders",
-    `ChatMessage.create({content:"<h2>The Goblin Drops Its Weapon</h2><p>“No more! No more! Grikka take shiny Bell! Bell scares Scratch-Scratch!”</p>"});`);
+    `ChatMessage.create({content:"<h2>The Goblin Drops Its Weapon</h2><p>“No more! No more! Grikka take shiny Bell! Bell scares Scratch-Scratch!”</p>"});`,
+    "icons/svg/peace.svg");
   await makeMacro("BG - Reveal Second Rat",
     `const s=game.scenes.getName("03 - Crooked Fang Cave"); if(!s)return; const rats=s.tokens.filter(t=>t.name?.includes("Giant Rat")); const hidden=rats.find(t=>t.hidden); if(hidden){await s.updateEmbeddedDocuments("Token",[{_id:hidden.id,hidden:false}]); ui.notifications.info("Second rat revealed.");} else ui.notifications.info("No hidden rat found.");`);
 }
@@ -722,6 +724,13 @@ async function installAdventure() {
   const journalFolder=await makeFolder("Briar Glen - GM Guide","JournalEntry");
   const itemFolder=await makeFolder("Briar Glen - Items","Item");
   const journal=await makeJournal(journalFolder);
+
+  // v0.7.9: Earlier builds defined these macro suites but never called them.
+  // Create/repair them every time the installer runs. makeMacro() is idempotent.
+  await makeGMTools();
+  await makeExplorationMacros();
+  await makeTransitionMacros();
+  await makeAudioMacros();
   await makeItem("Bell of Saint Arlen",itemFolder,`<p><b>Adventure Relic.</b> A silver handbell sacred to Briar Glen.</p><p><b>Ring the Bell (Action):</b> Scratch-Scratch makes a DC 12 Wisdom saving throw. On a failure it is Frightened of the bell-ringer until the end of its next turn. After it succeeds once, it has advantage on later saves.</p>`);
   await makeItem("Crowned Raven Map",itemFolder,`<p>An old map bearing the crowned-raven mark. It points toward Blackfeather Keep and bears a Goblin warning: <b>DO NOT RING THE SECOND BELL.</b></p>`,`modules/${MODULE_ID}/assets/handouts/crowned-raven-map.png`);
   let party=game.actors.find(a=>a.name==="Briar Glen Adventuring Party"&&marked(a));
