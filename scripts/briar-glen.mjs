@@ -459,9 +459,13 @@ async function makeTransitionMacros() {
 async function makeAudioMacros() {
   const names=["BG - Village & Festival","BG - Forest","BG - Cave","BG - Scratch-Scratch","BG - Victory"];
   for(const n of names){
-    await makeMacro(`Play ${n}`,`const p=game.playlists.getName(${JSON.stringify(n)}); if(p) await p.playAll();`,"icons/svg/sound.svg");
+    await makeMacro(`Play ${n}`,
+      `const p=game.playlists.getName(${JSON.stringify(n)}); if(!p)return ui.notifications.warn("Playlist not found: ${n}"); if(!p.sounds.size)return ui.notifications.warn("Playlist has no sounds: ${n}"); await p.playAll(); ui.notifications.info("Playing ${n}");`,
+      "icons/svg/sound.svg");
   }
-  await makeMacro("BG - Stop All Audio",`for(const p of game.playlists.filter(p=>p.playing)) await p.stopAll();`,"icons/svg/mute.svg");
+  await makeMacro("BG - Stop All Audio",
+    `const playing=game.playlists.filter(p=>p.playing); for(const p of playing) await p.stopAll(); ui.notifications.info("Stopped Briar Glen audio.");`,
+    "icons/svg/mute.svg");
 }
 
 
@@ -730,6 +734,7 @@ async function installAdventure() {
   await makeGMTools();
   await makeExplorationMacros();
   await makeTransitionMacros();
+  await makeAudioSuite();
   await makeAudioMacros();
   await makeItem("Bell of Saint Arlen",itemFolder,`<p><b>Adventure Relic.</b> A silver handbell sacred to Briar Glen.</p><p><b>Ring the Bell (Action):</b> Scratch-Scratch makes a DC 12 Wisdom saving throw. On a failure it is Frightened of the bell-ringer until the end of its next turn. After it succeeds once, it has advantage on later saves.</p>`);
   await makeItem("Crowned Raven Map",itemFolder,`<p>An old map bearing the crowned-raven mark. It points toward Blackfeather Keep and bears a Goblin warning: <b>DO NOT RING THE SECOND BELL.</b></p>`,`modules/${MODULE_ID}/assets/handouts/crowned-raven-map.png`);
