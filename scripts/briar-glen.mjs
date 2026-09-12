@@ -457,6 +457,51 @@ async function repairTacticalGeometryV074() {
   ui.notifications.info("Briar Glen v0.7.4: tactical geometry aligned to the 4000×3000 maps.");
 }
 
+
+async function ensureNamedToken(scene, actor, x, y, hidden=true) {
+  if(!scene || !actor) return null;
+  let tok=scene.tokens.find(t=>t.actorId===actor.id || t.name===actor.name);
+  if(tok) {
+    const update={_id:tok.id,x,y,hidden};
+    if(tok.name!==actor.name) update.name=actor.name;
+    await scene.updateEmbeddedDocuments("Token",[update]);
+    return scene.tokens.get(tok.id);
+  }
+  try {
+    const td=await actor.getTokenDocument({x,y,hidden});
+    const data=td.toObject();
+    delete data._id;
+    data.name=actor.name;
+    data.actorId=actor.id;
+    const [created]=await scene.createEmbeddedDocuments("Token",[data]);
+    return created;
+  } catch(err) {
+    console.error(`${MODULE_ID} | Failed to ensure token for ${actor.name}`,err);
+    return null;
+  }
+}
+
+async function repairNamedBossActorsAndTokens(actorFolder, cave) {
+  let grikka=game.actors.getName("Grikka One-Ear");
+  if(!grikka) grikka=await cloneNPC("Goblin","Grikka One-Ear",16,actorFolder,
+    "Goblin leader. Prefers negotiation. Surrenders at 5 HP or fewer unless Scratch-Scratch is present.");
+
+  let scratch=game.actors.getName("Scratch-Scratch");
+  if(!scratch) scratch=await cloneNPC("Giant Spider","Scratch-Scratch",30,actorFolder,
+    "Bell weakness: DC 12 Wisdom save or Frightened of bell-ringer until end of next turn. After first successful save, advantage on later Bell saves.");
+
+  if(grikka) {
+    await applyActorArt(grikka,"grikka-one-ear");
+    await ensureNamedToken(cave,grikka,3250,425,true);
+  }
+  if(scratch) {
+    await applyActorArt(scratch,"scratch-scratch");
+    await ensureNamedToken(cave,scratch,3150,2525,true);
+  }
+
+  return {grikka,scratch};
+}
+
 async function installAdventure() {
   if(!game.user.isGM) return ui.notifications.warn("Only a GM can install Briar Glen content.");
   if(game.system.id!=="dnd5e") return ui.notifications.error("This adventure requires D&D5e.");
@@ -499,6 +544,7 @@ async function installAdventure() {
     await cave.createEmbeddedDocuments("Note",notes);
   } catch(err){console.warn(`${MODULE_ID} | map note warning`,err);}
   await repairTacticalGeometryV074();
+  await repairNamedBossActorsAndTokens(actorFolder, cave);
   ui.notifications.info("Briar Glen installed. Add your five PCs later; no player characters were created or modified.");
   await village.activate();
 }
