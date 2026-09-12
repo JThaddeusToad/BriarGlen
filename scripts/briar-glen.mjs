@@ -345,6 +345,24 @@ async function createTheaterScene(name, filename) {
   });
 }
 
+
+async function repairTacticalBackgrounds() {
+  const defs = [
+    ["01 - Briar Glen", "briar-glen.png"],
+    ["02 - Forest Trail", "forest-trail.png"],
+    ["03 - Crooked Fang Cave", "crooked-fang-cave.png"]
+  ];
+  for (const [name,file] of defs) {
+    const s = game.scenes.getName(name);
+    if (!s) continue;
+    const expected = `modules/${MODULE_ID}/assets/maps/${file}`;
+    const current = s.background?.src ?? s.img ?? "";
+    if (current !== expected) {
+      await s.update({"background.src": expected});
+    }
+  }
+}
+
 async function installAdventure() {
   if(!game.user.isGM) return ui.notifications.warn("Only a GM can install Briar Glen content.");
   if(game.system.id!=="dnd5e") return ui.notifications.error("This adventure requires D&D5e.");
@@ -386,6 +404,7 @@ async function installAdventure() {
     const notes=[[2000,2650,"1 - Entrance"],[2000,2150,"2 - Alarm Trap"],[1900,1650,"3 - Common Room"],[3000,1600,"4 - Old Tunnel"],[2000,900,"5 - Grikka's Den"],[2000,320,"6 - Old Shrine"]].map(([x,y,text])=>({x,y,entryId:journal.id,text,icon:"icons/svg/book.svg"}));
     await cave.createEmbeddedDocuments("Note",notes);
   } catch(err){console.warn(`${MODULE_ID} | map note warning`,err);}
+  await repairTacticalBackgrounds();
   ui.notifications.info("Briar Glen installed. Add your five PCs later; no player characters were created or modified.");
   await village.activate();
 }
