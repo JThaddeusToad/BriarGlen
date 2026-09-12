@@ -1,0 +1,63 @@
+{
+  "target": {
+    "foundry": "14.359+",
+    "system": "dnd5e 6.0.0+",
+    "party": "5 player-created level-1 PCs"
+  },
+  "scenes": {
+    "Briar Glen": {
+      "size": "4000x3000",
+      "grid": 100,
+      "distance": 5,
+      "tokenVision": true,
+      "fog": "shared",
+      "darkness": 0.1,
+      "globalLight": true
+    },
+    "Forest Trail": {
+      "size": "4000x3000",
+      "grid": 100,
+      "distance": 5,
+      "tokenVision": true,
+      "fog": "shared",
+      "darkness": 0.18,
+      "globalLight": true
+    },
+    "Crooked Fang Cave": {
+      "size": "4000x3000",
+      "grid": 100,
+      "distance": 5,
+      "tokenVision": true,
+      "fog": "shared",
+      "darkness": 0.88,
+      "globalLight": false
+    }
+  },
+  "theaterOfTheMind": {
+    "format": "1920x1080 gridless narrative scenes",
+    "tokenVision": false,
+    "fog": "off",
+    "scenes": [
+      "Briar Glen Arrival",
+      "Crow's Tooth Hill",
+      "Cave Interior",
+      "Grikka's Parley",
+      "The Old Shrine",
+      "Scratch-Scratch Revealed",
+      "Triumph in Briar Glen"
+    ]
+  },
+  "actorArt": {
+    "portraits": "512x512 WebP",
+    "tokens": "512x512 transparent round WebP",
+    "actors": [
+      "Reeve Mara Thistlebrook",
+      "Brother Alden",
+      "Tobbin Reed",
+      "Grikka One-Ear",
+      "Beginner Goblin",
+      "Giant Rat",
+      "Scratch-Scratch"
+    ]
+  }
+}
