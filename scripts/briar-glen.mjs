@@ -327,9 +327,37 @@ async function addRoomPins(scene, rooms) {
   if(data.length) try{await scene.createEmbeddedDocuments("Note",data);}catch(err){console.warn(err);}
 }
 
+
+async function createTheaterScene(name, filename) {
+  let s = game.scenes.find(x => x.name === name && marked(x));
+  if (s) return s;
+  return Scene.create({
+    name,
+    width:1920,
+    height:1080,
+    padding:0,
+    grid:{type:0,size:100,distance:5,units:"ft"},
+    background:{src:`modules/${MODULE_ID}/assets/theater/${filename}`},
+    tokenVision:false,
+    fog:{mode:0},
+    environment:{darknessLevel:0,globalLight:{enabled:true}},
+    flags:{[MODULE_ID]:{[FLAG]:true,theater:true}}
+  });
+}
+
 async function installAdventure() {
   if(!game.user.isGM) return ui.notifications.warn("Only a GM can install Briar Glen content.");
   if(game.system.id!=="dnd5e") return ui.notifications.error("This adventure requires D&D5e.");
+
+  // Theater-of-the-mind scenes
+  await createTheaterScene("TOTM 01 - Briar Glen Arrival","totm-briar-glen.jpg");
+  await createTheaterScene("TOTM 02 - Crow's Tooth Hill","totm-crows-tooth.jpg");
+  await createTheaterScene("TOTM 03 - Cave Interior","totm-cave-interior.jpg");
+  await createTheaterScene("TOTM 04 - Grikka's Parley","totm-campfire.jpg");
+  await createTheaterScene("TOTM 05 - The Old Shrine","totm-old-shrine.jpg");
+  await createTheaterScene("TOTM 06 - Scratch-Scratch Revealed","totm-scratch-scratch.jpg");
+  await createTheaterScene("TOTM 07 - Triumph in Briar Glen","totm-triumph.jpg");
+
   ui.notifications.info("Installing Briar Glen content...");
   const sceneFolder=await makeFolder("Briar Glen - Scenes","Scene");
   const actorFolder=await makeFolder("Briar Glen - NPCs & Monsters","Actor");
