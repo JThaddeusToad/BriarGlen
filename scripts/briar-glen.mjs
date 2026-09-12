@@ -112,41 +112,187 @@ async function makeJournal(folder) {
   return JournalEntry.create({name:"The Stolen Bell of Briar Glen - GM Guide",folder:folder.id,pages,flags:{[MODULE_ID]:{[FLAG]:true}}});
 }
 
+
+async function makePlayerHandouts(folder) {
+  const defs=[
+    ["HANDOUT - Reeve Mara's Request",`
+      <h1>Reeve Mara's Request</h1>
+      <p>The sacred <b>Bell of Saint Arlen</b> was stolen from Briar Glen's shrine during the Harvest Festival.</p>
+      <p><b>Reeve Mara Thistlebrook</b> asks you to recover it before panic spreads through the village.</p>
+      <p><b>Reward:</b> 100 gp for the party, plus lodging and the village's gratitude.</p>`],
+    ["HANDOUT - Tobbin's Account",`
+      <h1>Tobbin's Account</h1>
+      <p>“I saw little shapes running north. Goblins, I think! One of them carried something wrapped in cloth. I heard one of them shout <b>Grikka</b> before they disappeared toward Crow's Tooth Hill.”</p>`],
+    ["HANDOUT - The Bell of Saint Arlen",`
+      <h1>The Bell of Saint Arlen</h1>
+      <p>A silver handbell sacred to Briar Glen. The villagers say its clear tone once drove darkness from the valley.</p>
+      <p><b>In the final confrontation:</b> a creature holding the Bell can use an Action to ring it. Scratch-Scratch must make a DC 12 Wisdom save or become Frightened of the bell-ringer until the end of its next turn. After its first successful Bell save, it has advantage on later saves.</p>`],
+    ["HANDOUT - Crowned Raven Map",`
+      <h1>The Crowned Raven Map</h1>
+      <p>An old, weathered map marked with a crowned raven. A route leads toward a place identified as <b>Blackfeather Keep</b>.</p>
+      <p><img src="modules/${MODULE_ID}/assets/handouts/crowned-raven-map.png" style="max-width:100%;height:auto"></p>
+      <p>Near a sealed chamber, someone has written in Goblin: <b>DO NOT RING THE SECOND BELL.</b></p>`],
+    ["HANDOUT - What We Know",`
+      <h1>What We Know</h1>
+      <ul>
+        <li>The Bell of Saint Arlen was stolen during the Harvest Festival.</li>
+        <li>Tracks and eyewitness reports point toward Crow's Tooth Hill.</li>
+        <li>The thieves appear to be goblins.</li>
+        <li>The name “Grikka” may belong to their leader.</li>
+      </ul>`],
+    ["HANDOUT - Exploring in Darkness",`
+      <h1>Exploring in Darkness</h1>
+      <p>Crooked Fang Cave is genuinely dark. Characters without darkvision will need a light source to see.</p>
+      <p>Stay close to companions, announce what light source you are carrying, and remember that bright light can reveal your position.</p>`],
+    ["HANDOUT - Goblin's Warning",`
+      <h1>Goblin's Warning</h1>
+      <p>“Bell scares Scratch-Scratch! Big spider came into old shrine. Grikka took shiny bell so we could make it go away. We don't want your village. We want our cave back!”</p>`]
+  ];
+  const made={};
+  for(const [name,content] of defs){
+    let j=game.journal.find(x=>x.name===name && marked(x));
+    if(!j){
+      j=await JournalEntry.create({
+        name,folder:folder.id,
+        ownership:{default:0},
+        pages:[{name:name.replace("HANDOUT - ",""),type:"text",text:{content}}],
+        flags:{[MODULE_ID]:{[FLAG]:true,playerHandout:true}}
+      });
+    } else {
+      await j.update({ownership:{default:0}});
+    }
+    made[name]=j;
+  }
+  return made;
+}
+
 async function makeItem(name, folder, description, img="icons/sundries/misc/bell.webp") {
   let item = game.items.find(i => i.name === name && marked(i));
   if (item) return item;
   return Item.create({name,type:"loot",folder:folder.id,img,system:{description:{value:description}},flags:{[MODULE_ID]:{[FLAG]:true}}});
 }
 
+function wallSeg(x1,y1,x2,y2,door=0,geometry="v0.7.6") {
+  return {c:[x1,y1,x2,y2],move:20,sight:20,light:20,sound:20,door,ds:0,
+    flags:{[MODULE_ID]:{[FLAG]:true,geometry}}};
+}
+
+function polyWalls(points, geometry="v0.7.6") {
+  const out=[];
+  for(let i=0;i<points.length-1;i++) out.push(wallSeg(...points[i],...points[i+1],0,geometry));
+  return out;
+}
+
+function villageWalls() {
+  const G="v0.7.6-village";
+  const out=[];
+
+  // Reeve's House — main building footprint, with a small approach gap.
+  out.push(...polyWalls([[650,300],[1160,190],[1390,420],[1370,760]],G));
+  out.push(...polyWalls([[1370,760],[1180,990],[910,1010]],G));
+  out.push(...polyWalls([[760,970],[610,760],[650,300]],G));
+
+  // The Gilded Stag.
+  out.push(...polyWalls([[1660,120],[2200,70],[2480,250],[2470,620]],G));
+  out.push(...polyWalls([[2470,620],[2300,760],[2080,760]],G));
+  out.push(...polyWalls([[1940,760],[1690,650],[1660,120]],G));
+
+  // Blacksmith.
+  out.push(...polyWalls([[2890,390],[3330,330],[3490,520],[3460,920]],G));
+  out.push(...polyWalls([[3460,920],[3190,1040],[3010,960]],G));
+  out.push(...polyWalls([[2900,830],[2860,590],[2890,390]],G));
+
+  // General Goods.
+  out.push(...polyWalls([[1710,1680],[2050,1580],[2380,1700],[2440,2030]],G));
+  out.push(...polyWalls([[2440,2030],[2250,2180],[2050,2190]],G));
+  out.push(...polyWalls([[1880,2170],[1710,2020],[1710,1680]],G));
+
+  // Shrine of Saint Arlen.
+  out.push(...polyWalls([[2760,1500],[3200,1450],[3460,1660],[3450,2130]],G));
+  out.push(...polyWalls([[3450,2130],[3260,2310],[3060,2300]],G));
+  out.push(...polyWalls([[2890,2290],[2740,2100],[2760,1500]],G));
+
+  // South-east house beside the road.
+  out.push(...polyWalls([[3450,2150],[3790,2090],[3990,2280]],G));
+  out.push(...polyWalls([[3990,2280],[3990,2700],[3780,2790]],G));
+  out.push(...polyWalls([[3610,2720],[3440,2500],[3450,2150]],G));
+
+  // River banks. Bridge/road approaches remain open.
+  out.push(...polyWalls([[0,80],[150,430],[210,760],[170,1050],[300,1350],[520,1550],[660,1750]],G));
+  out.push(...polyWalls([[940,1830],[1110,1990],[1250,2220],[1390,2450],[1640,2690],[1840,3000]],G));
+  return out;
+}
+
+function forestWalls() {
+  const out=[];
+  const G="v0.7.6-forest";
+
+  // Stream banks. The bridge span is intentionally left open.
+  out.push(...polyWalls([[1450,0],[1570,260],[1710,520],[1850,760],[1900,930]],G));
+  out.push(...polyWalls([[1950,1390],[2060,1640],[2180,1900],[2320,2210],[2440,2500],[2580,3000]],G));
+  out.push(...polyWalls([[2050,0],[2110,300],[2190,580],[2310,820],[2380,950]],G));
+  out.push(...polyWalls([[2450,1390],[2520,1660],[2620,1940],[2730,2200],[2820,2500],[2940,3000]],G));
+
+  // Major impassable boulder/deadfall clusters only.
+  out.push(...polyWalls([[120,300],[430,250],[650,400],[760,650]],G));
+  out.push(...polyWalls([[500,900],[720,1050],[810,1280],[680,1480]],G));
+  out.push(...polyWalls([[1020,1850],[1210,1750],[1430,1850],[1510,2090],[1370,2250]],G));
+  out.push(...polyWalls([[2700,250],[3020,170],[3290,340],[3370,640]],G));
+  out.push(...polyWalls([[3090,820],[3330,720],[3550,830],[3630,1070]],G));
+  out.push(...polyWalls([[3180,1700],[3440,1600],[3690,1710],[3770,1970]],G));
+  return out;
+}
+
 function caveWalls() {
-  const W=(x1,y1,x2,y2,door=0)=>({c:[x1,y1,x2,y2],move:20,sight:20,light:20,sound:20,door,ds:0,flags:{[MODULE_ID]:{[FLAG]:true,geometry:"v0.7.4"}}});
-  return [
-    // Entrance / western ledges
-    W(0,720,420,650),W(420,650,760,520),W(760,520,1100,430),W(1100,430,1320,540),
-    W(0,1500,360,1570),W(360,1570,700,1500),W(700,1500,1050,1360),W(1050,1360,1250,1220),
-    // Main upper chamber
-    W(1080,430,1450,180),W(1450,180,2050,120),W(2050,120,2380,280),W(2380,280,2520,520),
-    W(1250,1220,1450,1080),W(1450,1080,1850,1030),W(1850,1030,2200,1120),W(2200,1120,2470,950),
-    // Bridge choke from entrance to upper chamber
-    W(1210,820,1450,820),W(1210,980,1450,980),
-    // Grikka upper-right chamber
-    W(2600,120,3000,40),W(3000,40,3650,80),W(3650,80,4000,250),
-    W(2520,520,2700,730),W(2700,730,3050,820),W(3050,820,3500,760),W(3500,760,4000,900),
-    // Door/choke toward Grikka
-    W(2470,540,2680,640,1),
-    // Old tunnel / eastern mid-level
-    W(2850,820,2720,1120),W(2720,1120,2780,1500),W(2780,1500,3000,1710),
-    W(4000,900,3700,980),W(3700,980,3540,1230),W(3540,1230,3650,1510),W(3650,1510,4000,1660),
-    // Shrine approach
-    W(3000,1710,2780,1900),W(2780,1900,2640,2200),W(2640,2200,2500,2500),
-    W(4000,1660,3800,1840),W(3800,1840,3820,2180),W(3820,2180,4000,2380),
-    // Shrine / spider nest perimeter
-    W(2500,2500,2600,2820),W(2600,2820,2900,3000),
-    W(4000,2380,3830,2650),W(3830,2650,3700,3000),
-    // Central chasm/river edges
-    W(1850,1030,1780,1350),W(1780,1350,1900,1750),W(1900,1750,2100,2100),W(2100,2100,2250,2450),
-    W(2470,950,2450,1280),W(2450,1280,2350,1600),W(2350,1600,2380,1900),W(2380,1900,2500,2200)
-  ];
+  const out=[];
+  const G="v0.7.6-cave";
+
+  // Entrance ledge and upper-left chamber.
+  out.push(...polyWalls([[0,460],[330,410],[570,300],[860,250],[1080,360]],G));
+  out.push(...polyWalls([[0,930],[280,980],[520,910],[760,820],[980,770]],G));
+  out.push(...polyWalls([[980,770],[1050,520],[1200,300],[1450,120],[1900,80],[2200,170],[2400,360]],G));
+  out.push(...polyWalls([[1080,980],[1040,1210],[850,1370],[610,1510],[470,1760],[420,2050]],G));
+
+  // Bridge sides from upper-left chamber.
+  out.push(...polyWalls([[1200,730],[1270,1010],[1250,1210]],G));
+  out.push(...polyWalls([[1430,720],[1480,990],[1470,1150]],G));
+
+  // Lower-left pool chamber.
+  out.push(...polyWalls([[420,2050],[250,2210],[120,2450],[110,2730],[260,2920],[520,3000]],G));
+  out.push(...polyWalls([[1470,1150],[1540,1350],[1450,1560],[1260,1740],[1150,1960]],G));
+  out.push(...polyWalls([[1150,1960],[1150,2260],[1260,2480],[1490,2640],[1650,2850],[1700,3000]],G));
+
+  // Central water/chasm edges.
+  out.push(...polyWalls([[1530,980],[1650,900],[1810,930],[1900,1080],[1870,1280],[1770,1460],[1740,1660],[1810,1850],[1920,2050],[1950,2270],[1880,2470],[1740,2640]],G));
+  out.push(...polyWalls([[2210,870],[2350,920],[2450,1080],[2460,1290],[2390,1480],[2310,1650],[2330,1850],[2440,2040],[2510,2210],[2490,2380]],G));
+
+  // Grikka's Lair.
+  out.push(...polyWalls([[2400,360],[2550,180],[2820,80],[3220,50],[3620,100],[4000,270]],G));
+  out.push(...polyWalls([[2490,650],[2680,780],[2920,820],[3200,760],[3480,720],[3750,790],[4000,930]],G));
+  out.push(...polyWalls([[2370,430],[2460,510],[2490,650]],G));
+  out.push(...polyWalls([[2700,480],[2630,600],[2570,700]],G));
+
+  // Old Tunnels.
+  out.push(...polyWalls([[4000,930],[3790,970],[3610,1090],[3500,1280],[3510,1480]],G));
+  out.push(...polyWalls([[3510,1480],[3650,1630],[3870,1680],[4000,1710]],G));
+  out.push(...polyWalls([[3000,850],[2900,1030],[2860,1220],[2910,1430],[3020,1580]],G));
+  out.push(...polyWalls([[3020,1580],[3200,1650],[3370,1590],[3510,1480]],G));
+
+  // Bridge into the eastern shrine side.
+  out.push(...polyWalls([[2400,1520],[2520,1630],[2690,1780]],G));
+  out.push(...polyWalls([[2520,1370],[2640,1480],[2820,1630]],G));
+
+  // Shrine approach and spider nest.
+  out.push(...polyWalls([[2690,1780],[2760,1950],[2720,2150],[2610,2300]],G));
+  out.push(...polyWalls([[4000,1710],[3830,1780],[3740,1940],[3740,2140]],G));
+  out.push(...polyWalls([[2610,2300],[2510,2470],[2460,2700],[2510,2920],[2600,3000]],G));
+  out.push(...polyWalls([[3740,2140],[3880,2280],[3970,2470],[4000,2700]],G));
+  out.push(...polyWalls([[4000,2700],[3920,2920],[3860,3000]],G));
+
+  // Large central rock obstruction.
+  out.push(...polyWalls([[1500,2050],[1640,1960],[1800,1990],[1900,2140],[1880,2350],[1760,2490],[1600,2520]],G));
+
+  return out;
 }
 
 async function createScene(name,folder,bg,darkness,globalLight,journal,walls=[],lights=[]) {
@@ -502,6 +648,35 @@ async function repairNamedBossActorsAndTokens(actorFolder, cave) {
   return {grikka,scratch};
 }
 
+
+async function replaceModuleWalls(scene, walls) {
+  if(!scene) return;
+  const old=scene.walls.filter(w=>w.flags?.[MODULE_ID]?.[FLAG]).map(w=>w.id);
+  if(old.length) await scene.deleteEmbeddedDocuments("Wall",old);
+  if(walls.length) await scene.createEmbeddedDocuments("Wall",walls);
+}
+
+async function repairSceneAuthoringV076(actorFolder, journalFolder, village, forest, cave) {
+  await makePlayerHandouts(journalFolder);
+
+  const mara=await makeCivilianNPC("Reeve Mara Thistlebrook","mara-thistlebrook",actorFolder,
+    "<p>Practical, direct reeve of Briar Glen. Offers the party 100 gp total to recover the Bell of Saint Arlen.</p>");
+  const alden=await makeCivilianNPC("Brother Alden","brother-alden",actorFolder,
+    "<p>Keeper of the Shrine of Saint Arlen. Deeply worried about the missing Bell and what its theft means to the village.</p>");
+  const tobbin=await makeCivilianNPC("Tobbin Reed","tobbin-reed",actorFolder,
+    "<p>Young eyewitness who saw goblins fleeing toward Crow's Tooth Hill and heard the name “Grikka.”</p>");
+
+  await ensureNamedToken(village,mara,1050,1120,false);
+  await ensureNamedToken(village,alden,3050,2025,false);
+  await ensureNamedToken(village,tobbin,2050,1350,false);
+
+  await replaceModuleWalls(village,villageWalls());
+  await replaceModuleWalls(forest,forestWalls());
+  await replaceModuleWalls(cave,caveWalls());
+
+  ui.notifications.info("Briar Glen v0.7.6: NPCs, handouts, and tactical wall geometry repaired.");
+}
+
 async function installAdventure() {
   if(!game.user.isGM) return ui.notifications.warn("Only a GM can install Briar Glen content.");
   if(game.system.id!=="dnd5e") return ui.notifications.error("This adventure requires D&D5e.");
@@ -545,6 +720,7 @@ async function installAdventure() {
   } catch(err){console.warn(`${MODULE_ID} | map note warning`,err);}
   await repairTacticalGeometryV074();
   await repairNamedBossActorsAndTokens(actorFolder, cave);
+  await repairSceneAuthoringV076(actorFolder, journalFolder, village, forest, cave);
   ui.notifications.info("Briar Glen installed. Add your five PCs later; no player characters were created or modified.");
   await village.activate();
 }
