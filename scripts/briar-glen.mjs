@@ -425,6 +425,99 @@ async function makeMacro(name, command, img="icons/svg/dice-target.svg") {
   return Macro.create({name,type:"script",command,img,flags:{[MODULE_ID]:{[FLAG]:true}}});
 }
 
+
+async function makeRollTable(name, results, description="") {
+  let table=game.tables.find(t=>t.name===name && marked(t));
+  const data={
+    name,
+    description,
+    formula:`1d${results.length}`,
+    replacement:true,
+    displayRoll:true,
+    ownership:{default:CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE},
+    flags:{[MODULE_ID]:{[FLAG]:true}}
+  };
+  if(!table) table=await RollTable.create(data);
+  else await table.update(data);
+
+  if(table.results?.size){
+    await table.deleteEmbeddedDocuments("TableResult",table.results.map(r=>r.id));
+  }
+  await table.createEmbeddedDocuments("TableResult",results.map((text,i)=>({
+    type:CONST.TABLE_RESULT_TYPES.TEXT,
+    text,
+    range:[i+1,i+1],
+    weight:1,
+    drawn:false,
+    flags:{[MODULE_ID]:{[FLAG]:true}}
+  })));
+  return table;
+}
+
+async function makeRollTables() {
+  const chatter=[
+    `<b>“Scratch-Scratch hears everything. Everything.”</b> The goblin glances nervously toward the deeper cave.`,
+    `<b>“Grikka says Bell is ours until spider goes away.”</b>`,
+    `<b>“Humans put onions in stew. Goblins know better.”</b>`,
+    `<b>“No touch shiny web. Last goblin touched shiny web.”</b> Nobody explains what happened to the last goblin.`,
+    `<b>“Bell goes clang, spider goes skitter-skitter.”</b>`,
+    `<b>“One-Ear is called One-Ear because—”</b> Another goblin immediately tells the speaker to shut up.`,
+    `<b>“We didn't steal it. We borrowed it forever.”</b>`,
+    `<b>“Big rat is named Bitey. Other big rat is also named Bitey.”</b>`,
+    `<b>“If you see eight eyes, run before you count the legs.”</b>`,
+    `<b>“Grikka tried to negotiate with spider. Spider negotiated with Grikka's helmet.”</b>`,
+    `<b>“Village people scream too much. Goblins scream exactly enough.”</b>`,
+    `<b>“Second Bell? What second Bell?”</b> The goblin suddenly becomes extremely interested in the floor.`
+  ];
+
+  const festival=[
+    `A pie contest has stalled because the head judge keeps “checking” the blackberry entry.`,
+    `Two children race wooden hoops between the stalls while an exhausted parent apologizes to everyone they nearly hit.`,
+    `A fiddler plays a fast harvest tune while three villagers attempt a dance none of them remembers correctly.`,
+    `A farmer proudly displays a pumpkin with a suspicious resemblance to Reeve Mara.`,
+    `The smell of fresh bread, apples, smoke, and spiced cider drifts across the green.`,
+    `A chalkboard announces: <b>Bell Ringing Ceremony — Sunset</b>. Someone has crossed out the time and written <b>IF WE FIND IT</b>.`,
+    `A local dog has stolen a string of sausages and is being pursued by a butcher who is losing badly.`,
+    `Festival ribbons in gold and green stretch between the buildings and snap in the breeze.`,
+    `Brother Alden's donation basket contains three copper pieces, a button, and a polished acorn.`,
+    `A merchant loudly insists that every carved wooden raven is “absolutely traditional,” despite having made them yesterday.`,
+    `Villagers have started swapping increasingly ridiculous rumors about the Bell's disappearance.`,
+    `A small empty pedestal near the shrine is decorated with flowers where the Bell should have been displayed.`
+  ];
+
+  const cave=[
+    `A scrap of red festival ribbon is snagged on a sharp rock—evidence the Bell came this way.`,
+    `Tiny three-toed footprints overlap larger goblin tracks in the damp grit. The smaller prints belong to rats.`,
+    `A strand of unusually thick webbing trembles although there is no breeze.`,
+    `Someone has scratched <b>NO SPIDER</b> into the wall in crude Goblin.`,
+    `A dented cooking pot contains cold mushroom stew and one spoon far too large for a goblin.`,
+    `A cracked stone carving shows Saint Arlen holding a small bell toward a crouching beast.`,
+    `A bundle of discarded cloth contains a bent silver holy symbol worth little but recognizable to Brother Alden.`,
+    `A faint metallic chime echoes from deeper inside, followed by abrupt silence.`,
+    `A dead cave beetle the size of a fist has been wrapped neatly in silk and suspended from the ceiling.`,
+    `A narrow side crevice contains three smooth stones arranged like chairs around a fourth stone used as a table.`,
+    `A charcoal sketch on the wall depicts a huge spider with exaggerated fangs and several terrified stick-goblins.`,
+    `Behind loose rubble is the corner of an older worked-stone passage, hinting that the cave existed long before the goblins arrived.`
+  ];
+
+  await makeRollTable("BG - Goblin Chatter",chatter,
+    "Quick goblin dialogue, clues, and comic relief for Crooked Fang Cave.");
+  await makeRollTable("BG - Briar Glen Festival Details",festival,
+    "Small sensory details and incidents to make the Harvest Festival feel alive.");
+  await makeRollTable("BG - Cave Discoveries",cave,
+    "Optional discoveries, clues, and atmospheric details while exploring Crooked Fang Cave.");
+
+  await makeMacro("BG - Roll Goblin Chatter",
+    `const t=game.tables.getName("BG - Goblin Chatter"); if(!t)return ui.notifications.warn("BG - Goblin Chatter table not found."); await t.draw({displayChat:true});`,
+    "icons/svg/d20-black.svg");
+  await makeMacro("BG - Roll Festival Detail",
+    `const t=game.tables.getName("BG - Briar Glen Festival Details"); if(!t)return ui.notifications.warn("BG - Briar Glen Festival Details table not found."); await t.draw({displayChat:true});`,
+    "icons/svg/d20-black.svg");
+  await makeMacro("BG - Roll Cave Discovery",
+    `const t=game.tables.getName("BG - Cave Discoveries"); if(!t)return ui.notifications.warn("BG - Cave Discoveries table not found."); await t.draw({displayChat:true});`,
+    "icons/svg/d20-black.svg");
+}
+
 async function makeGMTools() {
   await makeMacro("BG - Reveal Selected Tokens",
     `const toks=canvas.tokens.controlled; if(!toks.length)return ui.notifications.warn("Select token(s) first."); await canvas.scene.updateEmbeddedDocuments("Token",toks.map(t=>({_id:t.id,hidden:false})));`);
@@ -818,9 +911,12 @@ async function installAdventure() {
   const itemFolder=await makeFolder("Briar Glen - Items","Item");
   const journal=await makeJournal(journalFolder);
   await makeGMQuickStart(journalFolder);
+  await makeGMDashboard(journalFolder);
+  const roomJournals=await makeRoomJournals(journalFolder);
 
   // v0.7.9: Earlier builds defined these macro suites but never called them.
   // Create/repair them every time the installer runs. makeMacro() is idempotent.
+  await makeRollTables();
   await makeGMTools();
   await makeExplorationMacros();
   await makeTransitionMacros();
@@ -841,6 +937,8 @@ async function installAdventure() {
     {name:"Grikka lantern",x:2050,y:900,walls:true,vision:false,config:{bright:2,dim:6,color:"#e7b66b"}},
     {name:"Entrance daylight spill",x:2000,y:2700,walls:true,vision:false,config:{bright:3,dim:7,color:"#c8d6bd"}}
   ]);
+  await addRoomPins(cave,roomJournals);
+  await addCaveHazards(cave,journal);
   await putToken(forest,goblin,2500,1050,true); await putToken(forest,goblin,3050,900,true); await putToken(forest,goblin,2230,1300,true);
   await putToken(cave,goblin,1750,2600,true); await putToken(cave,goblin,2250,2600,true); await putToken(cave,goblin,1550,1550,true); await putToken(cave,goblin,1950,1450,true); await putToken(cave,goblin,2350,1700,true); await putToken(cave,goblin,2450,950,true);
   await putToken(cave,grikka,2000,850,true); await putToken(cave,spider,2000,330,true); await putToken(cave,rat,1600,420,true); await putToken(cave,rat,2450,400,true);
@@ -851,7 +949,7 @@ async function installAdventure() {
   await repairTacticalGeometryV074();
   await repairNamedBossActorsAndTokens(actorFolder, cave);
   await repairSceneAuthoringV076(actorFolder, journalFolder, village, forest, cave);
-  ui.notifications.info("Briar Glen installed. Add your five PCs later; no player characters were created or modified.");
+  ui.notifications.info("Briar Glen v0.9.3 installed/updated: GM Dashboard, room journals, cave room pins, hazards, tables, macros, scenes, and audio repaired.");
   await village.activate();
 }
 
