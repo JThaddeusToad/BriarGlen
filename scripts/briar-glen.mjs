@@ -102,12 +102,12 @@ async function makeJournal(folder) {
   let j = game.journal.find(x => x.name === "The Stolen Bell of Briar Glen - GM Guide" && marked(x));
   if (j) return j;
   const pages = [
-    ["00 - DM Quick Start", `<div class="briar-glen-card"><h2>DM Quick Start</h2><p><b>Party:</b> five player-created level 1 characters.</p><p><b>Goal:</b> recover the Bell of Saint Arlen from goblins at Crooked Fang Cave.</p><p><b>Secret:</b> the goblins stole it because the sound frightens a giant cave spider called Scratch-Scratch.</p><p><b>Run time:</b> 3-4 hours.</p><p>Failed checks create complications, not dead ends.</p></div>`],
+    ["00 - DM Quick Start", `<div class="briar-glen-card"><h2>DM Quick Start</h2><p><b>Party:</b> four player-created level 1 characters.</p><p><b>Goal:</b> recover the Bell of Saint Arlen from goblins at Crooked Fang Cave.</p><p><b>Secret:</b> the goblins stole it because the sound frightens a giant cave spider called Scratch-Scratch.</p><p><b>Run time:</b> 3-4 hours.</p><p>Failed checks create complications, not dead ends.</p></div>`],
     ["01 - Briar Glen", `<h2>Briar Glen</h2><p><b>Read aloud:</b> Morning sunlight spills across the thatched roofs of Briar Glen. Festival ribbons flutter over the square. Then the iron alarm bell begins to ring. Villagers race toward the shrine. Its doors hang broken from their hinges. “The Bell of Saint Arlen is gone!”</p><h3>NPCs</h3><ul><li><b>Reeve Mara Thistlebrook:</b> offers 100 gp total and two healing potions.</li><li><b>Brother Alden:</b> shrine keeper.</li><li><b>Tobbin Reed:</b> saw goblins flee toward Crow's Tooth Hill.</li></ul><h3>Investigation</h3><p>Survival DC 10: 6-8 goblins north. Investigation DC 10: crude tools forced the shrine. Persuasion DC 10 with Tobbin: he heard “Grikka.” Perception DC 10: dropped goblin knife.</p>`],
     ["02 - Forest Trail", `<h2>Forest Trail</h2><p>Lead character makes Survival DC 10. Success: party notices the ambush before it begins. Failure: goblins begin hidden.</p><p><b>Encounter:</b> 3 Beginner Goblins, 5 HP each. When two fall, the survivor surrenders and says: “Grikka take shiny bell! Bell scares Scratch-Scratch!”</p>`],
     ["03 - Crooked Fang Cave", `<h2>Crooked Fang Cave</h2><ol><li><b>Entrance:</b> two sleeping goblins beside cider. Stealth DC 10 or creative bypass.</li><li><b>Alarm:</b> tripwire and cookware. Perception 11; Sleight of Hand 10.</li><li><b>Common Room:</b> 3 goblins arguing about returning the Bell; a 4th is optional reinforcement.</li><li><b>Old Tunnel:</b> scratches and bones. Nature 11 identifies giant spider signs. Brass key in a webbed pouch.</li><li><b>Grikka's Den:</b> Grikka + one goblin if combat occurs. He would rather negotiate.</li><li><b>Old Shrine:</b> Scratch-Scratch + one Giant Rat. Add the second rat only if the party is doing well.</li></ol>`],
     ["04 - Bell & Boss", `<h2>The Bell of Saint Arlen</h2><p>A creature holding the Bell may use an <b>Action</b> to ring it. Scratch-Scratch makes a <b>DC 12 Wisdom save</b>. On a failure it is <b>Frightened of the bell-ringer until the end of its next turn</b>. Once Scratch-Scratch succeeds, it has advantage on later Bell saves.</p><div class="briar-glen-warning"><b>Difficulty dial:</b> If the party struggles, do not introduce the second rat and reduce Scratch-Scratch to 22 HP. If they are cruising, reveal the second rat on round 2.</div>`],
-    ["05 - Ending & Treasure", `<h2>Ending</h2><p>Grikka returns the Bell after Scratch-Scratch is defeated. The old shrine chest contains 35 gp, 2 Potions of Healing, a silvered dagger, and the Crowned Raven map.</p><p>Briar Glen pays 100 gp. Advance all five PCs to level 2.</p><h3>Sequel Hook</h3><p>The Crowned Raven map points toward Blackfeather Keep. Beside a sealed chamber is written in Goblin: <b>DO NOT RING THE SECOND BELL.</b></p>`]
+    ["05 - Ending & Treasure", `<h2>Ending</h2><p>Grikka returns the Bell after Scratch-Scratch is defeated. The old shrine chest contains 35 gp, 2 Potions of Healing, a silvered dagger, and the Crowned Raven map.</p><p>Briar Glen pays 100 gp. Advance all four PCs to level 2.</p><h3>Sequel Hook</h3><p>The Crowned Raven map points toward Blackfeather Keep. Beside a sealed chamber is written in Goblin: <b>DO NOT RING THE SECOND BELL.</b></p>`]
   ].map(([name,content]) => ({name,type:"text",text:{content}}));
   return JournalEntry.create({name:"The Stolen Bell of Briar Glen - GM Guide",folder:folder.id,pages,flags:{[MODULE_ID]:{[FLAG]:true}}});
 }
@@ -170,7 +170,7 @@ async function makeGMQuickStart(folder) {
   const name="GM QUICK START - The Stolen Bell of Briar Glen";
   let j=game.journal.find(x=>x.name===name && marked(x));
   const content=`<h1>The Stolen Bell of Briar Glen — GM Quick Start</h1>
-  <p><b>Recommended party:</b> five level-1 characters. <b>Expected length:</b> 3–4 hours.</p>
+  <p><b>Recommended party for this session:</b> four level-1 characters. Three supplied PCs are installed automatically; add the fourth PC when its sheet is available. <b>Expected length:</b> 3–4 hours.</p>
   <h2>Adventure Flow</h2>
   <ol>
     <li><b>Briar Glen Arrival:</b> festival disrupted; Reeve Mara asks the party to recover the Bell.</li>
@@ -185,7 +185,7 @@ async function makeGMQuickStart(folder) {
   <h2>The Bell of Saint Arlen</h2>
   <p>Target Scratch-Scratch, then run <b>BG - Ring the Bell</b>. Scratch-Scratch makes a <b>DC 12 Wisdom saving throw</b>. On a failure it is frightened of the bell-ringer until the end of its next turn. After its first successful Bell save, it has advantage on later Bell saves.</p>
   <h2>Boss Difficulty</h2>
-  <p><b>Standard:</b> Scratch-Scratch 30 HP + 1 rat. <b>Easy:</b> run <b>BG - Easy Boss</b> for 22 HP. <b>Harder:</b> use <b>BG - Reveal Second Rat</b>.</p>
+  <p><b>Four-player baseline:</b> run <b>BG - Easy Boss</b> for Scratch-Scratch at 22 HP + 1 rat. <b>Harder:</b> use <b>BG - Standard Boss</b> for 30 HP. Reveal the second rat only if the party is cruising.</p>
   <h2>Useful Macros</h2>
   <p><b>Reveal/Hide Selected Tokens</b>, <b>Goblin Surrenders</b>, <b>Tripwire Discovered/Triggered</b>, <b>Search Webbed Pouch</b>, <b>Open Shrine Chest</b>, <b>Ring the Bell</b>, scene transitions, and audio controls are all prefixed <b>BG -</b> or <b>Play BG -</b>.</p>
   <h2>Player Handouts</h2>
@@ -401,9 +401,9 @@ async function makeGMDashboard(folder) {
       <tr><td>Return</td><td>TOTM 07</td><td>100 gp reward; level 2; second Bell hook</td></tr>
       </table>
       <h2>Difficulty Dials</h2>
-      <p><b>Easier:</b> Scratch-Scratch 22 HP; no second rat; goblins surrender early.</p>
-      <p><b>Standard:</b> Scratch-Scratch 30 HP + 1 rat.</p>
-      <p><b>Harder:</b> add second rat on round 2.</p>
+      <p><b>Four-player baseline:</b> Scratch-Scratch 22 HP + 1 rat.</p>
+      <p><b>Harder:</b> Scratch-Scratch 30 HP + 1 rat.</p>
+      <p><b>Only if the party is cruising:</b> reveal the second rat.</p>
       <h2>Bell</h2>
       <p>Action → Scratch-Scratch DC 12 Wisdom save → failure: Frightened of bell-ringer until end of its next turn. After first successful Bell save, advantage on later Bell saves.</p>
       <h2>Quick DCs</h2>
@@ -891,6 +891,280 @@ async function repairSceneAuthoringV076(actorFolder, journalFolder, village, for
   ui.notifications.info("Briar Glen v0.7.8: label-adjacent barriers removed and cave walls changed to movement-only.");
 }
 
+
+async function findDnd5eItem(name, allowedTypes=[]) {
+  const wanted=String(name).trim().toLowerCase();
+  for(const pack of game.packs.filter(p=>p.documentName==="Item" && p.metadata?.packageName==="dnd5e")){
+    try{
+      const idx=await pack.getIndex({fields:["name","type"]});
+      const hit=idx.find(e=>String(e.name).trim().toLowerCase()===wanted && (!allowedTypes.length || allowedTypes.includes(e.type)));
+      if(hit){
+        const doc=await pack.getDocument(hit._id);
+        if(doc) return doc.toObject();
+      }
+    }catch(err){ console.warn(`${MODULE_ID} | Could not search ${pack.collection} for ${name}`,err); }
+  }
+  return null;
+}
+
+async function addPCItem(actor, name, allowedTypes=[], quantity=null, fallbackType="equipment", fallbackDescription="") {
+  if(actor.items.some(i=>i.name===name)) return actor.items.find(i=>i.name===name);
+  let data=await findDnd5eItem(name,allowedTypes);
+  if(data){
+    delete data._id;
+    data.flags={...(data.flags??{}),[MODULE_ID]:{[FLAG]:true,pcItem:true}};
+    if(quantity!==null && data.system && "quantity" in data.system) data.system.quantity=quantity;
+  }else{
+    data={
+      name,
+      type:fallbackType,
+      img:"icons/svg/item-bag.svg",
+      system:{description:{value:fallbackDescription||`<p>Imported from the player's supplied D&D Beyond character sheet.</p>`}},
+      flags:{[MODULE_ID]:{[FLAG]:true,pcItem:true}}
+    };
+  }
+  const [created]=await actor.createEmbeddedDocuments("Item",[data]);
+  return created;
+}
+
+function pcOwnership(playerName) {
+  const ownership={default:CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE};
+  const wanted=String(playerName??"").trim().toLowerCase();
+  const user=game.users.find(u=>{
+    const n=String(u.name??"").trim().toLowerCase();
+    return n===wanted || n.includes(wanted) || wanted.includes(n);
+  });
+  if(user) ownership[user.id]=CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+  return {ownership,user};
+}
+
+async function makePCCharacter(spec, folder) {
+  let actor=game.actors.find(a=>a.name===spec.name && marked(a));
+  const {ownership,user}=pcOwnership(spec.player);
+  const abilities={};
+  for(const [key,value] of Object.entries(spec.abilities)){
+    abilities[key]={value,proficient:spec.saveProficiencies.includes(key)?1:0};
+  }
+  const skills={};
+  for(const [key,value] of Object.entries(spec.skills??{})) skills[key]={value};
+
+  const system={
+    abilities,
+    skills,
+    attributes:{
+      hp:{value:spec.hp,max:spec.hp,temp:0},
+      ac:{calc:"flat",flat:spec.ac},
+      movement:{walk:30,units:"ft"},
+      senses:{darkvision:spec.darkvision??0,units:"ft"},
+      spellcasting:spec.spellcasting??""
+    },
+    details:{
+      alignment:spec.alignment??"",
+      biography:{value:spec.biography??""}
+    }
+  };
+  if(spec.spellSlots){
+    system.spells={spell1:{value:spec.spellSlots,max:spec.spellSlots}};
+  }
+
+  const actorData={
+    name:spec.name,
+    type:"character",
+    folder:folder.id,
+    img:`modules/${MODULE_ID}/assets/characters/portraits/${spec.slug}.jpg`,
+    ownership,
+    system,
+    prototypeToken:{
+      name:spec.name,
+      actorLink:true,
+      disposition:CONST.TOKEN_DISPOSITIONS.FRIENDLY,
+      displayName:CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER,
+      displayBars:CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER,
+      bar1:{attribute:"attributes.hp"},
+      texture:{src:`modules/${MODULE_ID}/assets/characters/tokens/${spec.slug}.png`,scaleX:1,scaleY:1},
+      sight:{
+        enabled:true,
+        range:spec.darkvision?60:0,
+        visionMode:spec.darkvision?"darkvision":"basic"
+      }
+    },
+    flags:{[MODULE_ID]:{[FLAG]:true,playerCharacter:true,sourcePlayer:spec.player}}
+  };
+
+  if(!actor) actor=await Actor.create(actorData);
+  else await actor.update(actorData);
+
+  // Add class first so the dnd5e sheet reports the correct level where possible.
+  const classData=await findDnd5eItem(spec.className,["class"]);
+  if(!actor.items.some(i=>i.type==="class" && i.name===spec.className)){
+    if(classData){
+      delete classData._id;
+      classData.system={...(classData.system??{}),levels:1};
+      classData.flags={...(classData.flags??{}),[MODULE_ID]:{[FLAG]:true,pcItem:true}};
+      await actor.createEmbeddedDocuments("Item",[classData]);
+    }else{
+      await addPCItem(actor,spec.className,[],null,"class",`<p>${spec.className} 1, imported from the supplied character sheet.</p>`);
+    }
+  }
+
+  // Preserve the supplied sheet's species/background as sheet-visible features.
+  await addPCItem(actor,`${spec.species} — Species`,[],null,"feat",`<p><b>Species:</b> ${spec.species}. Imported from the supplied D&D Beyond sheet.</p>`);
+  await addPCItem(actor,`${spec.background} — Background`,[],null,"feat",`<p><b>Background:</b> ${spec.background}. Imported from the supplied D&D Beyond sheet.</p>`);
+
+  for(const item of spec.items??[]){
+    await addPCItem(actor,item.name,item.types??[],item.quantity??null,item.fallbackType??"equipment",item.description??"");
+  }
+  for(const feat of spec.features??[]){
+    await addPCItem(actor,feat.name,["feat"],null,"feat",feat.description??"");
+  }
+  for(const spell of spec.spells??[]){
+    const created=await addPCItem(actor,spell.name,["spell"],null,"spell",spell.description??"");
+    if(created && spell.prepared!==undefined){
+      try{ await created.update({"system.preparation.mode":"prepared","system.preparation.prepared":spell.prepared}); }catch(err){}
+    }
+  }
+
+  if(!user) console.warn(`${MODULE_ID} | No Foundry user matched D&D Beyond player '${spec.player}'. Assign Owner permission to ${spec.name} manually.`);
+  return actor;
+}
+
+async function makePCSourceJournal(spec, folder) {
+  const name=`SOURCE SHEET - ${spec.name}`;
+  const href=`modules/${MODULE_ID}/assets/characters/${spec.pdf}`;
+  const content=`<h1>${spec.name}</h1>
+    <p><b>Player:</b> ${spec.player}<br><b>Character:</b> ${spec.species} ${spec.className} 1<br><b>Background:</b> ${spec.background}</p>
+    <p><a href="${href}" target="_blank">Open supplied D&amp;D Beyond PDF</a></p>
+    <p>This journal is a GM reference copy of the exact PDF supplied for the session. The playable Foundry Actor is created separately by the installer.</p>`;
+  let j=game.journal.find(x=>x.name===name && marked(x));
+  if(!j){
+    j=await JournalEntry.create({name,folder:folder.id,ownership:{default:CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE},flags:{[MODULE_ID]:{[FLAG]:true}}});
+    await j.createEmbeddedDocuments("JournalEntryPage",[{name:"Source Character Sheet",type:"text",text:{content,format:1}}]);
+  }else{
+    const page=j.pages?.contents?.[0];
+    if(page) await page.update({"text.content":content});
+  }
+  return j;
+}
+
+async function ensurePCToken(scene,actor,x,y) {
+  if(!scene || !actor) return;
+  const existing=scene.tokens.find(t=>t.actorId===actor.id || t.name===actor.name);
+  const data={
+    name:actor.name,
+    actorId:actor.id,
+    actorLink:true,
+    x,y,
+    hidden:false,
+    disposition:CONST.TOKEN_DISPOSITIONS.FRIENDLY,
+    texture:{src:actor.prototypeToken.texture.src},
+    sight:foundry.utils.deepClone(actor.prototypeToken.sight),
+    bar1:{attribute:"attributes.hp"},
+    flags:{[MODULE_ID]:{[FLAG]:true,playerCharacter:true}}
+  };
+  if(existing) await existing.update(data);
+  else await scene.createEmbeddedDocuments("Token",[data]);
+}
+
+async function makeSessionPCs(actorFolder,journalFolder,village,forest,cave) {
+  const pcFolder=await makeFolder("Briar Glen - Player Characters","Actor");
+
+  const specs=[
+    {
+      name:"Lady Sunferia",slug:"lady-sunferia",player:"zannapie",className:"Wizard",species:"High Elf",background:"Sage",pdf:"lady-sunferia-sheet.pdf",
+      abilities:{str:8,dex:12,con:13,int:17,wis:15,cha:10},
+      saveProficiencies:["int","wis"],skills:{arc:1,his:1,ins:1,inv:1,prc:1},hp:7,ac:11,darkvision:60,spellcasting:"int",spellSlots:2,
+      alignment:"Lawful Good",
+      biography:`<p><b>Age:</b> 13; <b>Height:</b> 5'6"; <b>Skin:</b> tan; <b>Eyes:</b> blue; <b>Hair:</b> blond French braids.</p>
+      <p>Sunferia grew up in a peaceful village along a sunflower-lined river until the river turned green and the fields began to wither. She secretly studied magic under Sky, a warm, grandparent-like wizard in the village library. She left to seek the knowledge needed to save her people and knows little of her family history beyond a grandfather who vanished before she was born.</p>`,
+      items:[
+        {name:"Dagger",types:["weapon"],quantity:2},
+        {name:"Quarterstaff",types:["weapon"],quantity:2},
+        {name:"Spellbook",types:["equipment","loot"],quantity:1},
+        {name:"Backpack",types:["container","equipment"],quantity:1},
+        {name:"Calligrapher's Supplies",types:["tool"],quantity:1},
+        {name:"Robe",types:["equipment"],quantity:2},
+        {name:"Oil",types:["consumable","loot"],quantity:10},
+        {name:"Tinderbox",types:["equipment","loot"],quantity:1},
+        {name:"Lamp",types:["equipment"],quantity:1}
+      ],
+      features:[
+        {name:"Arcane Recovery",description:"<p>Once per Long Rest after a Short Rest, recover expended spell slots with a combined level of 1.</p>"},
+        {name:"Fey Ancestry",description:"<p>Advantage on saving throws to avoid or end the Charmed condition.</p>"},
+        {name:"Trance",description:"<p>Magic cannot put you to sleep; complete a Long Rest in 4 hours of trancelike meditation.</p>"},
+        {name:"Magic Initiate (Wizard)",description:"<p>Origin feat from the supplied character sheet.</p>"}
+      ],
+      spells:[
+        {name:"Light",prepared:true},{name:"Mage Hand",prepared:true},{name:"Ray of Frost",prepared:true},
+        {name:"Fire Bolt",prepared:true},{name:"Minor Illusion",prepared:true},{name:"Elementalism",prepared:true},
+        {name:"Mage Armor",prepared:true},{name:"Magic Missile",prepared:true},{name:"Feather Fall",prepared:true},
+        {name:"Sleep",prepared:true},{name:"Thunderwave",prepared:true},{name:"Detect Magic",prepared:true},{name:"Shield",prepared:true}
+      ]
+    },
+    {
+      name:"Gorbech",slug:"gorbech",player:"gavineklund",className:"Barbarian",species:"Human",background:"Soldier",pdf:"gorbech-sheet.pdf",
+      abilities:{str:16,dex:12,con:10,int:8,wis:15,cha:14},
+      saveProficiencies:["str","con"],skills:{ath:1,itm:1,sur:1},hp:12,ac:11,darkvision:0,spellcasting:"",
+      biography:`<p>The supplied sheet identifies Gorbech as a Human Barbarian 1 with the Soldier background. No appearance, backstory, or equipment inventory was entered on the PDF.</p>`,
+      items:[],
+      features:[
+        {name:"Rage",description:"<p><b>2 / Long Rest.</b> Enter Rage as a Bonus Action while not wearing Heavy Armor.</p>"},
+        {name:"Unarmored Defense",description:"<p>The supplied sheet reports AC 11 while unarmored.</p>"},
+        {name:"Savage Attacker",description:"<p>Once per turn when you hit with a weapon, roll the weapon's damage dice twice and use either roll.</p>"},
+        {name:"Weapon Mastery",description:"<p>Chosen masteries on the supplied sheet: Greataxe (Cleave) and Warhammer (Push). The PDF's equipment inventory is empty, so those weapons are not added to inventory automatically.</p>"}
+      ]
+    },
+    {
+      name:"Brash",slug:"brash",player:"techiki",className:"Rogue",species:"Black Dragonborn",background:"Criminal / Spy",pdf:"brash-sheet.pdf",
+      abilities:{str:14,dex:15,con:13,int:13,wis:11,cha:9},
+      saveProficiencies:["dex","int"],skills:{acr:1,ath:1,dec:2,itm:1,per:1,ste:2},hp:9,ac:12,darkvision:60,spellcasting:"",
+      alignment:"Chaotic Good",
+      biography:`<p><b>Age:</b> 20; <b>Height:</b> 6'0"; <b>Skin:</b> tan; <b>Eyes:</b> blue; <b>Hair:</b> short dark hair.</p>
+      <p>Brash's parents died to a dragon when he was three. He entered a life of crime, made a serious mistake, and is trying to redeem himself. He belongs to the thieves' guild and prefers making a new friend to making a new enemy.</p>`,
+      items:[
+        {name:"Leather Armor",types:["equipment"],quantity:1},
+        {name:"Dagger",types:["weapon"],quantity:2},
+        {name:"Shortbow",types:["weapon"],quantity:1},
+        {name:"Shortsword",types:["weapon"],quantity:1},
+        {name:"Thieves' Tools",types:["tool"],quantity:1},
+        {name:"Arrows",types:["consumable"],quantity:20},
+        {name:"Crowbar",types:["equipment","loot"],quantity:3},
+        {name:"Backpack",types:["container","equipment"],quantity:1},
+        {name:"Rope, Hempen (50 feet)",types:["equipment","loot"],quantity:1},
+        {name:"Torch",types:["consumable","equipment"],quantity:10},
+        {name:"Ball Bearings",types:["consumable","equipment"],quantity:1000},
+        {name:"Hooded Lantern",types:["equipment"],quantity:1}
+      ],
+      features:[
+        {name:"Sneak Attack",description:"<p>Once per turn, deal an extra 1d6 damage with a Finesse or Ranged weapon when the supplied Sneak Attack conditions are met.</p>"},
+        {name:"Expertise",description:"<p>Expertise: Deception and Stealth.</p>"},
+        {name:"Thieves' Cant",description:"<p>You know Thieves' Cant.</p>"},
+        {name:"Breath Weapon (Acid)",description:"<p><b>2 / Long Rest.</b> Replace one attack with a 15-ft. cone or 30-ft. line; DC 11 Dexterity save, 1d10 acid damage, half on success.</p>"},
+        {name:"Draconic Resistance (Acid)",description:"<p>Resistance to acid damage.</p>"},
+        {name:"Weapon Mastery",description:"<p>Dagger (Nick) and Hand Crossbow (Vex) are the selected masteries on the supplied sheet.</p>"}
+      ]
+    }
+  ];
+
+  const actors=[];
+  for(const spec of specs){
+    const a=await makePCCharacter(spec,pcFolder);
+    await makePCSourceJournal(spec,journalFolder);
+    actors.push(a);
+  }
+
+  // Put the three known PCs at sensible entry positions on every tactical scene.
+  const sceneStarts=[
+    [village,[[1600,2500],[1750,2500],[1900,2500]]],
+    [forest, [[1150,2450],[1300,2450],[1450,2450]]],
+    [cave,   [[250,700],[400,700],[550,700]]]
+  ];
+  for(const [scene,coords] of sceneStarts){
+    for(let i=0;i<actors.length;i++) await ensurePCToken(scene,actors[i],coords[i][0],coords[i][1]);
+  }
+
+  return actors;
+}
+
 async function installAdventure() {
   if(!game.user.isGM) return ui.notifications.warn("Only a GM can install Briar Glen content.");
   if(game.system.id!=="dnd5e") return ui.notifications.error("This adventure requires D&D5e.");
@@ -939,6 +1213,7 @@ async function installAdventure() {
   ]);
   await addRoomPins(cave,roomJournals);
   await addCaveHazards(cave,journal);
+  await makeSessionPCs(actorFolder,journalFolder,village,forest,cave);
   await putToken(forest,goblin,2500,1050,true); await putToken(forest,goblin,3050,900,true); await putToken(forest,goblin,2230,1300,true);
   await putToken(cave,goblin,1750,2600,true); await putToken(cave,goblin,2250,2600,true); await putToken(cave,goblin,1550,1550,true); await putToken(cave,goblin,1950,1450,true); await putToken(cave,goblin,2350,1700,true); await putToken(cave,goblin,2450,950,true);
   await putToken(cave,grikka,2000,850,true); await putToken(cave,spider,2000,330,true); await putToken(cave,rat,1600,420,true); await putToken(cave,rat,2450,400,true);
@@ -949,7 +1224,7 @@ async function installAdventure() {
   await repairTacticalGeometryV074();
   await repairNamedBossActorsAndTokens(actorFolder, cave);
   await repairSceneAuthoringV076(actorFolder, journalFolder, village, forest, cave);
-  ui.notifications.info("Briar Glen v0.9.3 installed/updated: GM Dashboard, room journals, cave room pins, hazards, tables, macros, scenes, and audio repaired.");
+  ui.notifications.info("Briar Glen v0.9.5 installed/updated: three supplied player characters, tokens, source sheets, four-player guidance, and prior adventure content are ready.");
   await village.activate();
 }
 
