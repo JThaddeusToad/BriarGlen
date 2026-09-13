@@ -415,7 +415,13 @@ async function makeGMDashboard(folder) {
 
 async function makeMacro(name, command, img="icons/svg/dice-target.svg") {
   let m=game.macros.find(x=>x.name===name && marked(x));
-  if (m) return m;
+  if (m) {
+    const changes={};
+    if(m.command!==command) changes.command=command;
+    if(m.img!==img) changes.img=img;
+    if(Object.keys(changes).length) await m.update(changes);
+    return m;
+  }
   return Macro.create({name,type:"script",command,img,flags:{[MODULE_ID]:{[FLAG]:true}}});
 }
 
@@ -480,27 +486,63 @@ async function makeAudioSuite() {
   };
 }
 
-async function makeSceneChatMacro(name, sceneName, html) {
-  return makeMacro(name,
-    `const s=game.scenes.getName(${JSON.stringify(sceneName)}); if(s) await s.activate(); ChatMessage.create({content:${JSON.stringify(html)}});`,
-    "icons/svg/book.svg");
+async function makeSceneChatMacro(name, sceneName, tacticalSceneName, html, cue) {
+  const command=`const totm=game.scenes.getName(${JSON.stringify(sceneName)});
+const tactical=game.scenes.getName(${JSON.stringify(tacticalSceneName)});
+if(!totm)return ui.notifications.warn("TOTM scene not found: ${sceneName}");
+await totm.activate();
+await ChatMessage.create({content:${JSON.stringify(html)}});
+if(!tactical)return ui.notifications.warn("Tactical scene not found: ${tacticalSceneName}");
+new foundry.applications.api.DialogV2({
+  window:{title:"Briar Glen — Ready for Tactical Map?"},
+  content:${JSON.stringify(`<p><b>GM cue:</b> ${cue}</p><p>Keep the party on the theater-of-the-mind scene while you narrate. When you are ready to place tokens and continue play, switch everyone to <b>${tacticalSceneName}</b>.</p>`)},
+  buttons:[
+    {
+      action:"switch",
+      label:"Open Tactical Map",
+      icon:"<i class='fa-solid fa-map'></i>",
+      default:true,
+      callback:async()=>{await tactical.activate(); return "switch";}
+    },
+    {
+      action:"stay",
+      label:"Stay on TOTM",
+      icon:"<i class='fa-solid fa-book-open'></i>",
+      callback:()=> "stay"
+    }
+  ]
+}).render({force:true});`;
+  return makeMacro(name,command,"icons/svg/book.svg");
 }
 
 async function makeTransitionMacros() {
-  await makeSceneChatMacro("BG - Opening","TOTM 01 - Briar Glen Arrival",
-    `<h2>The Stolen Bell of Briar Glen</h2><p>Morning sunlight spills across the thatched roofs of Briar Glen. Festival ribbons flutter over the square. Then the iron alarm bell begins to ring...</p>`);
-  await makeSceneChatMacro("BG - Journey to Crow's Tooth","TOTM 02 - Crow's Tooth Hill",
-    `<h2>Toward Crow's Tooth Hill</h2><p>The village road narrows into a woodland trail. Ahead, the jagged silhouette of Crow's Tooth rises above the trees.</p>`);
-  await makeSceneChatMacro("BG - Enter the Cave","TOTM 03 - Cave Interior",
-    `<h2>Crooked Fang Cave</h2><p>Cool air breathes from the black opening. Somewhere inside, water drips with slow, patient regularity.</p>`);
-  await makeSceneChatMacro("BG - Grikka Parley","TOTM 04 - Grikka's Parley",
-    `<h2>Grikka One-Ear</h2><p>The goblin in the cooking-pot helmet raises both hands. “Wait! Wait! You want Bell? We talk first.”</p>`);
-  await makeSceneChatMacro("BG - Shrine Reveal","TOTM 05 - The Old Shrine",
-    `<h2>The Old Shrine</h2><p>Worked stone emerges from the natural cave. Candles gutter around a cracked altar, and thick webs vanish into the darkness overhead.</p>`);
-  await makeSceneChatMacro("BG - Scratch-Scratch Reveal","TOTM 06 - Scratch-Scratch Revealed",
-    `<h2>Scratch-Scratch</h2><p>A shape unfolds above you. Too many legs. Too many eyes. The web trembles—and something enormous drops toward the shrine floor.</p>`);
-  await makeSceneChatMacro("BG - Finale","TOTM 07 - Triumph in Briar Glen",
-    `<h2>The Bell Returns</h2><p>The silver Bell rings over Briar Glen once more. Cheers roll across the village green as festival ribbons lift in the evening breeze.</p>`);
+  await makeSceneChatMacro("BG - Opening","TOTM 01 - Briar Glen Arrival","01 - Briar Glen",
+    `<h2>The Stolen Bell of Briar Glen</h2><p>Morning sunlight spills across the thatched roofs of Briar Glen. Festival ribbons flutter over the square. Then the iron alarm bell begins to ring...</p>`,
+    "Finish the opening narration and let the players take in Briar Glen before beginning investigation and token movement.");
+
+  await makeSceneChatMacro("BG - Journey to Crow's Tooth","TOTM 02 - Crow's Tooth Hill","02 - Forest Trail",
+    `<h2>Toward Crow's Tooth Hill</h2><p>The village road narrows into a woodland trail. Ahead, the jagged silhouette of Crow's Tooth rises above the trees.</p>`,
+    "Finish the travel narration. Switch when the party reaches the ambush area and tactical positioning matters.");
+
+  await makeSceneChatMacro("BG - Enter the Cave","TOTM 03 - Cave Interior","03 - Crooked Fang Cave",
+    `<h2>Crooked Fang Cave</h2><p>Cool air breathes from the black opening. Somewhere inside, water drips with slow, patient regularity.</p>`,
+    "Let the cave atmosphere land, then switch when the characters cross the entrance and exploration begins.");
+
+  await makeSceneChatMacro("BG - Grikka Parley","TOTM 04 - Grikka's Parley","03 - Crooked Fang Cave",
+    `<h2>Grikka One-Ear</h2><p>The goblin in the cooking-pot helmet raises both hands. “Wait! Wait! You want Bell? We talk first.”</p>`,
+    "Run Grikka's opening line here. Switch back to the cave map when players begin moving, negotiating around the room, or combat starts.");
+
+  await makeSceneChatMacro("BG - Shrine Reveal","TOTM 05 - The Old Shrine","03 - Crooked Fang Cave",
+    `<h2>The Old Shrine</h2><p>Worked stone emerges from the natural cave. Candles gutter around a cracked altar, and thick webs vanish into the darkness overhead.</p>`,
+    "Describe the shrine and Bell before returning to tactical exploration.");
+
+  await makeSceneChatMacro("BG - Scratch-Scratch Reveal","TOTM 06 - Scratch-Scratch Revealed","03 - Crooked Fang Cave",
+    `<h2>Scratch-Scratch</h2><p>A shape unfolds above you. Too many legs. Too many eyes. The web trembles—and something enormous drops toward the shrine floor.</p>`,
+    "Use the reveal for the dramatic beat, then switch to the cave map and begin the boss encounter.");
+
+  await makeSceneChatMacro("BG - Finale","TOTM 07 - Triumph in Briar Glen","01 - Briar Glen",
+    `<h2>The Bell Returns</h2><p>The silver Bell rings over Briar Glen once more. Cheers roll across the village green as festival ribbons lift in the evening breeze.</p>`,
+    "Keep the finale on TOTM for the celebration. Open Briar Glen only if players want to continue roleplaying in the village.");
 }
 
 async function makeAudioMacros() {
