@@ -166,6 +166,52 @@ async function makePlayerHandouts(folder) {
   return made;
 }
 
+async function makeGMQuickStart(folder) {
+  const name="GM QUICK START - The Stolen Bell of Briar Glen";
+  let j=game.journal.find(x=>x.name===name && marked(x));
+  const content=`<h1>The Stolen Bell of Briar Glen — GM Quick Start</h1>
+  <p><b>Recommended party:</b> five level-1 characters. <b>Expected length:</b> 3–4 hours.</p>
+  <h2>Adventure Flow</h2>
+  <ol>
+    <li><b>Briar Glen Arrival:</b> festival disrupted; Reeve Mara asks the party to recover the Bell.</li>
+    <li><b>Investigation:</b> speak with Mara, Brother Alden, and Tobbin. Most checks are DC 10 and should fail forward.</li>
+    <li><b>Forest Trail:</b> reveal the three Beginner Goblins and run the ambush.</li>
+    <li><b>Crooked Fang Cave:</b> alarm tripwire, goblin common area, Grikka's parley, old shrine.</li>
+    <li><b>Boss:</b> Scratch-Scratch + 1 Giant Rat. Use the second rat only if the party is cruising.</li>
+    <li><b>Return:</b> play the Victory scene/audio and award level 2 by milestone.</li>
+  </ol>
+  <h2>Key DCs</h2>
+  <p>Investigation checks are generally <b>DC 10</b>. Alarm tripwire: <b>Perception DC 11</b> to notice and <b>Sleight of Hand DC 10</b> to disable.</p>
+  <h2>The Bell of Saint Arlen</h2>
+  <p>Target Scratch-Scratch, then run <b>BG - Ring the Bell</b>. Scratch-Scratch makes a <b>DC 12 Wisdom saving throw</b>. On a failure it is frightened of the bell-ringer until the end of its next turn. After its first successful Bell save, it has advantage on later Bell saves.</p>
+  <h2>Boss Difficulty</h2>
+  <p><b>Standard:</b> Scratch-Scratch 30 HP + 1 rat. <b>Easy:</b> run <b>BG - Easy Boss</b> for 22 HP. <b>Harder:</b> use <b>BG - Reveal Second Rat</b>.</p>
+  <h2>Useful Macros</h2>
+  <p><b>Reveal/Hide Selected Tokens</b>, <b>Goblin Surrenders</b>, <b>Tripwire Discovered/Triggered</b>, <b>Search Webbed Pouch</b>, <b>Open Shrine Chest</b>, <b>Ring the Bell</b>, scene transitions, and audio controls are all prefixed <b>BG -</b> or <b>Play BG -</b>.</p>
+  <h2>Player Handouts</h2>
+  <p>Player handouts are created GM-only by default. Share them individually when appropriate.</p>
+  <h2>End of Adventure</h2>
+  <p>Treasure: 35 gp, 2 healing potions, a silvered dagger, and the Crowned Raven Map. The party reaches <b>level 2</b>. The map points toward Blackfeather Keep and the warning: <b>DO NOT RING THE SECOND BELL.</b></p>`;
+  if(!j){
+    j=await JournalEntry.create({
+      name,
+      folder:folder?.id,
+      ownership:{default:CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE},
+      flags:{[MODULE_ID]:{[FLAG]:true}}
+    });
+    await j.createEmbeddedDocuments("JournalEntryPage",[{
+      name:"Quick Start",
+      type:"text",
+      text:{content,format:1}
+    }]);
+  } else {
+    const page=j.pages?.contents?.[0];
+    if(page) await page.update({"text.content":content});
+  }
+  return j;
+}
+
+
 async function makeItem(name, folder, description, img="icons/sundries/misc/bell.webp") {
   let item = game.items.find(i => i.name === name && marked(i));
   if (item) return item;
@@ -729,6 +775,7 @@ async function installAdventure() {
   const journalFolder=await makeFolder("Briar Glen - GM Guide","JournalEntry");
   const itemFolder=await makeFolder("Briar Glen - Items","Item");
   const journal=await makeJournal(journalFolder);
+  await makeGMQuickStart(journalFolder);
 
   // v0.7.9: Earlier builds defined these macro suites but never called them.
   // Create/repair them every time the installer runs. makeMacro() is idempotent.
