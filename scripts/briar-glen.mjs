@@ -407,29 +407,30 @@ async function addCaveHazards(scene, journal) {
 
 async function makePlaylist(name, filename, volume=0.25) {
   let p=game.playlists.find(x=>x.name===name && marked(x));
-  if (p) return p;
-  p=await Playlist.create({
-    name, mode:0,
-    flags:{[MODULE_ID]:{[FLAG]:true}}
-  });
+  if (!p) {
+    p=await Playlist.create({name,mode:0,flags:{[MODULE_ID]:{[FLAG]:true}}});
+  }
+  const path=`modules/${MODULE_ID}/assets/audio/${filename}`;
   try {
-    await p.createEmbeddedDocuments("PlaylistSound",[{
-      name,
-      path:`modules/${MODULE_ID}/assets/audio/${filename}`,
-      repeat:true,
-      volume
-    }]);
-  } catch(err){console.warn(`${MODULE_ID} | Could not add sound ${name}`,err);}
+    const sounds=Array.from(p.sounds ?? []);
+    if (!sounds.length) {
+      await p.createEmbeddedDocuments("PlaylistSound",[{name,path,repeat:true,volume}]);
+    } else {
+      await p.updateEmbeddedDocuments("PlaylistSound",
+        sounds.map((s,i)=>({_id:s.id,name:i===0?name:s.name,path:i===0?path:s.path,repeat:i===0?true:s.repeat,volume:i===0?volume:s.volume}))
+      );
+    }
+  } catch(err){console.warn(`${MODULE_ID} | Could not create/repair sound ${name}`,err);}
   return p;
 }
 
 async function makeAudioSuite() {
   return {
-    village:await makePlaylist("BG - Village & Festival","village-ambience.wav",0.22),
-    forest:await makePlaylist("BG - Forest","forest-ambience.wav",0.20),
-    cave:await makePlaylist("BG - Cave","cave-ambience.wav",0.20),
-    boss:await makePlaylist("BG - Scratch-Scratch","boss-tension.wav",0.24),
-    victory:await makePlaylist("BG - Victory","victory-ambience.wav",0.22)
+    village:await makePlaylist("BG - Village & Festival","village-ambience.mp3",0.22),
+    forest:await makePlaylist("BG - Forest","forest-ambience.mp3",0.20),
+    cave:await makePlaylist("BG - Cave","cave-ambience.mp3",0.20),
+    boss:await makePlaylist("BG - Scratch-Scratch","boss-tension.mp3",0.24),
+    victory:await makePlaylist("BG - Victory","victory-ambience.mp3",0.22)
   };
 }
 
